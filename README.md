@@ -61,3 +61,7 @@ This project demonstrates:
 * Dynamic Excel generation
 * Database persistence using JPA
 * Clean service/helper layer separation
+
+## Resource
+- [Buidling Excel Upload and Download via spring boot](https://medium.com/@khatiwadasandesh501/building-excel-upload-download-functionality-in-spring-boot-950f9178bb41)
+
