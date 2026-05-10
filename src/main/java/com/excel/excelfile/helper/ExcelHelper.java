@@ -5,12 +5,15 @@ import com.excel.excelfile.exception.ExcelFileException;
 import com.excel.excelfile.exception.ExceptionTypes;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,7 +44,7 @@ public class ExcelHelper {
             XSSFSheet sheet = workBook.getSheetAt(0);
 
             Iterator<Row> row = sheet.iterator();
-            if(row.hasNext()){
+            if (row.hasNext()) {
                 row.next(); //skipping header
             }
 
@@ -71,6 +74,29 @@ public class ExcelHelper {
             throw new ExcelFileException(ExceptionTypes.EXCEL_ERROR);
         }
         return wrestlerList;
+    }
+
+    public ByteArrayInputStream downloadTemplate() {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+
+            XSSFSheet sheet = workbook.createSheet("wrestlers");
+
+            Row header = sheet.createRow(0);
+            header.createCell(0, CellType.STRING).setCellValue("name");
+            header.createCell(1, CellType.STRING).setCellValue("finisher");
+
+            //size
+            sheet.autoSizeColumn(0);
+            sheet.autoSizeColumn(1);
+
+            workbook.write(out);
+
+            return new ByteArrayInputStream(out.toByteArray());
+
+        } catch (Exception e) {
+            throw new ExcelFileException(ExceptionTypes.TEMPLATE_ISSUE);
+        }
     }
 }
 

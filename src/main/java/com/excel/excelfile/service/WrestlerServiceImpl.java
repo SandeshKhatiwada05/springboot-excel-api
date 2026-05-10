@@ -2,6 +2,7 @@ package com.excel.excelfile.service;
 
 import com.excel.excelfile.entity.ExcelFile;
 import com.excel.excelfile.entity.Wrestler;
+import com.excel.excelfile.entity.dto.WrestlerDTO;
 import com.excel.excelfile.exception.ExcelFileException;
 import com.excel.excelfile.exception.ExceptionTypes;
 import com.excel.excelfile.helper.ExcelHelper;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -36,7 +38,13 @@ public class WrestlerServiceImpl implements WrestlerService {
     }
 
     @Override
-    public List<Wrestler> getAllWrestlers() {
-        return wrestlerRepository.findAll();
+    public List<WrestlerDTO> getAllWrestlers() {
+        List<Wrestler> allWrestlers = wrestlerRepository.findAll();
+        return allWrestlers.stream().map(WrestlerDTO::new).toList();
+    }
+
+    @Override
+    public ByteArrayInputStream downloadTemplate() {
+        return excelHelper.downloadTemplate();
     }
 }
