@@ -1,9 +1,11 @@
 package com.excel.excelfile.helper;
 
+import com.excel.excelfile.annotation.ExcelExport;
 import com.excel.excelfile.entity.Wrestler;
 import com.excel.excelfile.exception.ExcelFileException;
 import com.excel.excelfile.exception.ExceptionTypes;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.juli.logging.Log;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.IndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -15,7 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,6 +112,55 @@ public class ExcelHelper {
             throw new ExcelFileException(ExceptionTypes.TEMPLATE_ISSUE);
         }
     }
+
+    public ByteArrayInputStream downloadGenericTemplate(Class<?> clazz) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            String sheetName = clazz.getSimpleName();
+            XSSFSheet sheet = workbook.createSheet(sheetName);
+            sheet.createFreezePane(0, 1);
+
+            Row headerRow = sheet.createRow(0);
+
+            //set cell style
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setWrapText(true);
+            cellStyle.setFillForegroundColor(IndexedColors.BLUE1.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Font font = workbook.createFont();
+            font.setBold(true);
+            font.setColor(IndexedColors.WHITE.getIndex());
+            cellStyle.setFont(font);
+
+            List<Field> field = List.of(clazz.getDeclaredFields());
+            List<String> annotatedField = new ArrayList<>();
+            for (Field singleField : field) {
+                if (singleField.isAnnotationPresent(ExcelExport.class)) {
+                    log.info("Header :{}", singleField);
+                    annotatedField.add(singleField.getName());
+                }
+            }
+
+            int currentColumn = 0;
+            for (String column : annotatedField) {
+                Cell cell = headerRow.createCell(currentColumn);
+                cell.setCellStyle(cellStyle);
+
+                sheet.setColumnWidth(currentColumn, 20 * 265);
+                cell.setCellValue(column);
+                currentColumn++;
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
 
 

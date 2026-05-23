@@ -8,6 +8,8 @@ import com.excel.excelfile.exception.ExceptionTypes;
 import com.excel.excelfile.helper.ExcelHelper;
 import com.excel.excelfile.repository.WrestlerRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,4 +49,11 @@ public class WrestlerServiceImpl implements WrestlerService {
     public ByteArrayInputStream downloadTemplate() {
         return excelHelper.downloadTemplate();
     }
+
+    @Override
+    public ByteArrayInputStream downloadGenericTemplate(Class<?> clazz) {
+        return excelHelper.downloadGenericTemplate(clazz);
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.excel.excelfile.entity;
 
+import com.excel.excelfile.annotation.ExcelExport;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,9 @@ public class Wrestler {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "wrestler_gen")
     private Integer id;
 
+    @ExcelExport(headerName = "name", orderNumber = 1)
     private String name;
 
+    @ExcelExport(headerName = "finisher", orderNumber = 2)
     private String finisher;
 }
