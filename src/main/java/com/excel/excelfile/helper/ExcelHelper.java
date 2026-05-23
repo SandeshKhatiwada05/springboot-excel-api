@@ -4,9 +4,9 @@ import com.excel.excelfile.entity.Wrestler;
 import com.excel.excelfile.exception.ExcelFileException;
 import com.excel.excelfile.exception.ExceptionTypes;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.IndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.annotation.Configuration;
@@ -81,10 +81,19 @@ public class ExcelHelper {
              ByteArrayOutputStream out = new ByteArrayOutputStream();) {
 
             XSSFSheet sheet = workbook.createSheet("wrestlers");
+            sheet.createFreezePane(0, 1);
+
+            //set cell style
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setWrapText(true);
+            cellStyle.setFillForegroundColor(IndexedColors.BLUE1.getIndex());
+            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             Row header = sheet.createRow(0);
             header.createCell(0, CellType.STRING).setCellValue("name");
             header.createCell(1, CellType.STRING).setCellValue("finisher");
+            header.setRowStyle(cellStyle);
+
 
             //size
             sheet.autoSizeColumn(0);

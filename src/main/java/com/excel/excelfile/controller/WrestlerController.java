@@ -1,10 +1,7 @@
 package com.excel.excelfile.controller;
 
 import com.excel.excelfile.entity.ExcelFile;
-import com.excel.excelfile.entity.Wrestler;
 import com.excel.excelfile.entity.dto.WrestlerDTO;
-import com.excel.excelfile.exception.ExceptionTypes;
-import com.excel.excelfile.exception.NoFileException;
 import com.excel.excelfile.service.WrestlerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
