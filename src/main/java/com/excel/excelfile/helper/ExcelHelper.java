@@ -7,10 +7,8 @@ import com.excel.excelfile.exception.ExceptionTypes;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.juli.logging.Log;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.IndexedColorMap;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,10 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Configuration
 @Slf4j
@@ -135,12 +130,14 @@ public class ExcelHelper {
             cellStyle.setFont(font);
 
             List<Field> field = List.of(clazz.getDeclaredFields());
+
+            List<Field> sortedField = field.stream().filter(f -> f.isAnnotationPresent(ExcelExport.class))
+                    .sorted(Comparator.comparingInt(f -> f.getAnnotation(ExcelExport.class).orderNumber()))
+                    .toList();
             List<String> annotatedField = new ArrayList<>();
-            for (Field singleField : field) {
-                if (singleField.isAnnotationPresent(ExcelExport.class)) {
-                    log.info("Header :{}", singleField);
-                    annotatedField.add(singleField.getName());
-                }
+            for (Field singleField : sortedField) {
+                log.info("Header :{}", singleField);
+                annotatedField.add(singleField.getName());
             }
 
             int currentColumn = 0;
@@ -153,12 +150,38 @@ public class ExcelHelper {
                 currentColumn++;
             }
 
+            //drop down feature
+            dropDown(sheet, field);
+
             workbook.write(out);
             return new ByteArrayInputStream(out.toByteArray());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void dropDown(XSSFSheet sheet, List<Field> field) {
+        // Define the options for the drop-down
+        String[] options = {"true", "false"};
+
+
+        // Create the constraint using the XSSF helper (for .xlsx files)
+        XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) sheet);
+        XSSFDataValidationConstraint dvConstraint = (XSSFDataValidationConstraint) dvHelper.createExplicitListConstraint(options);
+
+
+        Integer lastIndexForColumn = field.stream().filter(f -> f.isAnnotationPresent(ExcelExport.class))
+                .map(f -> f.getAnnotation(ExcelExport.class)
+                        .orderNumber()).max(Integer::compareTo)
+                .orElse(-1);
+        // Define the cell range for the drop-down (firstRow, lastRow, firstCol, lastCol)
+        CellRangeAddressList addressList = new CellRangeAddressList(1, 10, lastIndexForColumn-1, lastIndexForColumn-1); // Rows 1-10, Column A
+
+        // Create and apply the validation
+        XSSFDataValidation validation = (XSSFDataValidation) dvHelper.createValidation(dvConstraint, addressList);
+        validation.setShowErrorBox(true);
+        sheet.addValidationData(validation);
     }
 
 }

@@ -23,4 +23,7 @@ public class Wrestler {
 
     @ExcelExport(headerName = "finisher", orderNumber = 2)
     private String finisher;
+
+    @ExcelExport(headerName = "isActive", orderNumber = 3)
+    private boolean isActive;
 }
